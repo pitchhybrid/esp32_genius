@@ -1,16 +1,18 @@
 #include <Arduino.h>
+#include "button.hpp"
+#include "led.hpp"
 
-#define BTNVR 14 // VERMELHO
-#define LEDVR 27 // VERMELHO
+#define _BTNVR 14 // VERMELHO
+#define _LEDVR 27 // VERMELHO
 
-#define BTNAZ 26 // AZUL
-#define LEDAZ 25 // AZUL
+#define _BTNAZ 26 // AZUL
+#define _LEDAZ 25 // AZUL
 
-#define BTNVD 33 // VERDE
-#define LEDVD 32 // VERDE
+#define _BTNVD 33 // VERDE
+#define _LEDVD 32 // VERDE
 
-#define BTNAM 12 // AMARELO
-#define LEDAM 13 // AMARELO
+#define _BTNAM 12 // AMARELO
+#define _LEDAM 13 // AMARELO
 
 #define T_RODADAS 5
 
@@ -18,112 +20,127 @@ int rodada = 1;
 
 int old[T_RODADAS] = {0};
 
-enum CORES
+typedef enum CORES
 {
-  VERMELHO = LEDVR,
-  AZUL = LEDAZ,
-  VERDE = LEDVD,
-  AMARELO = LEDAM,
+  VERMELHO = _LEDVR,
+  AZUL = _LEDAZ,
+  VERDE = _LEDVD,
+  AMARELO = _LEDAM,
   NENHUM
-};
+} COR;
 
-bool leastVR = HIGH;
-bool leastVD = HIGH;
-bool leastAZ = HIGH;
-bool leastAM = HIGH;
+Button btnVR(_BTNVR);
+Button btnAZ(_BTNAZ);
+Button btnVD(_BTNVD);
+Button btnAM(_BTNAM);
+
+Led ledVR(_LEDVR);
+Led ledAZ(_LEDAZ);
+Led ledVD(_LEDVD);
+Led ledAM(_LEDAM);
 
 int *gerarRodadas();
 int getCores();
 void verRodadas(int ant[], int atu[]);
 void copiar(int v[]);
-CORES buttonWait();
-void apagar(int btn);
+COR buttonWait();
 bool boucingButton(int least, int pin);
+void atraso(int ms);
+
 void setup()
 {
   Serial.begin(115200);
-  pinMode(BTNVR, INPUT_PULLUP);
-  pinMode(LEDVR, OUTPUT);
-  pinMode(BTNAZ, INPUT_PULLUP);
-  pinMode(LEDAZ, OUTPUT);
-  pinMode(BTNVD, INPUT_PULLUP);
-  pinMode(LEDVD, OUTPUT);
-  pinMode(BTNAM, INPUT_PULLUP);
-  pinMode(LEDAM, OUTPUT);
+  
+  btnVR.iniciar();
+  btnAZ.iniciar();
+  btnVD.iniciar();
+  btnAM.iniciar();
 
-  digitalWrite(VERMELHO, HIGH);
-  digitalWrite(VERDE, HIGH);
-  digitalWrite(AZUL, HIGH);
-  digitalWrite(AMARELO, HIGH);
-  delay(500);
-  digitalWrite(VERMELHO, LOW);
-  digitalWrite(VERDE, LOW);
-  digitalWrite(AZUL, LOW);
-  digitalWrite(AMARELO, LOW);
-  delay(500);
+  ledVR.iniciar();
+  ledAZ.iniciar();
+  ledVD.iniciar();
+  ledAM.iniciar();
+
+  ledVR.acender();
+  ledAZ.acender();
+  ledVD.acender();
+  ledAM.acender();
+  
+  atraso(500);
+
+  ledVR.apagar();
+  ledAZ.apagar();
+  ledVD.apagar();
+  ledAM.apagar();
+
+  atraso(500);
 }
 
 void loop()
 {
  
-  if (rodada < T_RODADAS)
-  {
+  CORES cor = buttonWait();
+  Serial.println(cor);
+  // if (rodada < T_RODADAS)
+  // {
 
-    int *arr = gerarRodadas();
+  //   int *arr = gerarRodadas();
 
-    for (int i = 0; i < rodada; i++)
-    {
-      digitalWrite(arr[i], HIGH);
-      delay(1000);
-      digitalWrite(arr[i], LOW);
-      delay(1000);
-    }
-    
-    for(int i= 0;i < rodada; i++){
-      CORES cor = buttonWait();
-      if(arr[i] == cor){
-        Serial.println("\ncerto");
-      }else{
-        Serial.println("\nerrado");
-      }
-    }
+  //   for (int i = 0; i < rodada; i++)
+  //   {
+  //     digitalWrite(arr[i], HIGH);
+  //     delay(1000);
+  //     digitalWrite(arr[i], LOW);
+  //     delay(1000);
+  //   }
 
-    
+  //   for (int i = 0; i < rodada; i++)
+  //   {
+  //     CORES cor = buttonWait();
+  //     if (arr[i] == cor)
+  //     {
+  //       Serial.println("\ncerto");
+  //     }
+  //     else
+  //     {
+  //       Serial.println("\nerrado");
+  //     }
+  //   }
 
-    rodada++;
-    copiar(arr);
-  }
+  //   rodada++;
+  //   copiar(arr);
+  // }
 }
 
-CORES buttonWait()
+COR buttonWait()
 {
 
   while (true)
   {
-    if (!boucingButton(leastVR,BTNVR))
+    if (btnVR.liberado())
     {
       // leastVR = HIGH;
-      // Serial.println("\nVERMELHO");
+      Serial.println("\nVERMELHO");
       return VERMELHO;
     }
-    if (!boucingButton(leastVR,BTNVD))
-    {
-      // leastVD = HIGH;
-      // Serial.println("\nVERDE");
-      return VERDE;
-    }
-    if (!boucingButton(leastVR,BTNAZ))
-    {
-      // leastAZ = HIGH;
-      // Serial.println("\nAZUL");
-      return AZUL;
-    }
-    if (!boucingButton(leastVR,BTNAM))
-    {
-      // leastAM = HIGH;
-      // Serial.println("\nAMARELO");
-      return AMARELO;
-    }
+    // if (!boucingButton(leastVD, _BTNVD))
+    // {
+    //   // leastVD = HIGH;
+    //   Serial.println("\nVERDE");
+    //   return VERDE;
+    // }
+    // if (!boucingButton(leastAZ, _BTNAZ))
+    // {
+    //   // leastAZ = HIGH;
+    //   Serial.println("\nAZUL");
+    //   return AZUL;
+    // }
+    // if (!boucingButton(leastAM, _BTNAM))
+    // {
+    //   // leastAM = HIGH;
+    //   Serial.println("\nAMARELO");
+    //   return AMARELO;
+    // }
   }
   return NENHUM;
 }
@@ -133,25 +150,6 @@ void copiar(int v[])
   for (int i = 0; i < T_RODADAS; i++)
   {
     old[i] = v[i];
-  }
-}
-
-void apagar(int btn)
-{
-  switch (btn)
-  {
-  case BTNVR:
-    digitalWrite(VERMELHO, LOW);
-    break;
-  case BTNVD:
-    digitalWrite(VERDE, LOW);
-    break;
-  case BTNAZ:
-    digitalWrite(AZUL, LOW);
-    break;
-  case BTNAM:
-    digitalWrite(AMARELO, LOW);
-    break;
   }
 }
 
@@ -179,21 +177,28 @@ int getCores()
 {
   int r = random(0, 4);
   if (r == 0)
-    return LEDVR;
+    return VERMELHO;
   if (r == 1)
-    return LEDAZ;
+    return AZUL;
   if (r == 2)
-    return LEDVD;
+    return VERDE;
   if (r == 3)
-    return LEDAM;
+    return AMARELO;
   return 0;
 }
 
-bool boucingButton(int least, int pin){
+bool boucingButton(int least, int pin)
+{
   int current = digitalRead(pin);
-  if(least == LOW && current == HIGH ){
+  if (least == LOW && current == HIGH)
+  {
     least = current;
-    delay(50);
+    delay(30);
   }
   return current;
 }
+
+void atraso(int ms){
+  const long timeNow = millis();
+  while (millis() < timeNow + ms);
+};
