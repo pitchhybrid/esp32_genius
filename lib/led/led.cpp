@@ -21,6 +21,6 @@ void Led::apagar(){
 
 void Led::piscar(int v){
     for(int i= 0; i < v;i++){
-        acender(100);
+        acender(1000);
     }
 }

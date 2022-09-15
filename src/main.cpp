@@ -44,8 +44,8 @@ int getCores();
 void verRodadas(int ant[], int atu[]);
 void copiar(int v[]);
 COR buttonWait();
-bool boucingButton(int least, int pin);
 void atraso(int ms);
+bool game(int arr[]);
 
 void setup()
 {
@@ -72,44 +72,85 @@ void setup()
   ledAZ.apagar();
   ledVD.apagar();
   ledAM.apagar();
-
-  atraso(500);
 }
 
 void loop()
 {
+
+  if (rodada < T_RODADAS)
+  {
+    atraso(1000);
+
+    int *arr = gerarRodadas();
+
+    for (int i = 0; i < rodada; i++)
+    {
+      digitalWrite(arr[i], HIGH);
+      atraso(1000);
+      digitalWrite(arr[i], LOW);
+      atraso(1000);
+    }
+
+  if(game(arr)){
+    rodada++;
+    copiar(arr);
+    atraso(1000);
+  }else{
+    rodada = T_RODADAS;
+  }
+  
+
+  }else{
+    Serial.println("JOGO TERMINADO");
+    while (true){
+      ledVR.acender();
+      ledAZ.acender();
+      ledVD.acender();
+      ledAM.acender();
+
+      atraso(1000);
+
+      ledVR.apagar();
+      ledAZ.apagar();
+      ledVD.apagar();
+      ledAM.apagar();
+
+      atraso(1000);
+    };
+  }
+}
+
+bool game(int arr[]){
  
-  CORES cor = buttonWait();
-  Serial.println(cor);
-  // if (rodada < T_RODADAS)
-  // {
-
-  //   int *arr = gerarRodadas();
-
-  //   for (int i = 0; i < rodada; i++)
-  //   {
-  //     digitalWrite(arr[i], HIGH);
-  //     delay(1000);
-  //     digitalWrite(arr[i], LOW);
-  //     delay(1000);
-  //   }
-
-  //   for (int i = 0; i < rodada; i++)
-  //   {
-  //     CORES cor = buttonWait();
-  //     if (arr[i] == cor)
-  //     {
-  //       Serial.println("\ncerto");
-  //     }
-  //     else
-  //     {
-  //       Serial.println("\nerrado");
-  //     }
-  //   }
-
-  //   rodada++;
-  //   copiar(arr);
-  // }
+  for (int i = 0; i < rodada; i++)
+  {
+    CORES cor = buttonWait();
+    if (arr[i] == cor)
+    {
+      if(cor == VERMELHO)
+      {
+        ledVR.acender(1000);
+      }
+      if (cor == AZUL)
+      {
+        ledAZ.acender(1000);
+      }
+      if (cor == VERDE)
+      {
+        ledVD.acender(1000);
+      }
+      if (cor == AMARELO)
+      {
+        ledAM.acender(1000);
+      }
+    }
+    else
+    {
+      return false;
+    }
+    atraso(1000);
+  }
+  return true;
 }
 
 COR buttonWait()
@@ -119,28 +160,24 @@ COR buttonWait()
   {
     if (btnVR.liberado())
     {
-      // leastVR = HIGH;
       Serial.println("\nVERMELHO");
       return VERMELHO;
     }
-    // if (!boucingButton(leastVD, _BTNVD))
-    // {
-    //   // leastVD = HIGH;
-    //   Serial.println("\nVERDE");
-    //   return VERDE;
-    // }
-    // if (!boucingButton(leastAZ, _BTNAZ))
-    // {
-    //   // leastAZ = HIGH;
-    //   Serial.println("\nAZUL");
-    //   return AZUL;
-    // }
-    // if (!boucingButton(leastAM, _BTNAM))
-    // {
-    //   // leastAM = HIGH;
-    //   Serial.println("\nAMARELO");
-    //   return AMARELO;
-    // }
+    if (btnVD.liberado())
+    {
+      Serial.println("\nVERDE");
+      return VERDE;
+    }
+    if (btnAZ.liberado())
+    {
+      Serial.println("\nAZUL");
+      return AZUL;
+    }
+    if (btnAM.liberado())
+    {
+      Serial.println("\nAMARELO");
+      return AMARELO;
+    }
   }
   return NENHUM;
 }
@@ -185,17 +222,6 @@ int getCores()
   if (r == 3)
     return AMARELO;
   return 0;
-}
-
-bool boucingButton(int least, int pin)
-{
-  int current = digitalRead(pin);
-  if (least == LOW && current == HIGH)
-  {
-    least = current;
-    delay(30);
-  }
-  return current;
 }
 
 void atraso(int ms){

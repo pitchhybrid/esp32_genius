@@ -1,18 +1,54 @@
+#include <Arduino.h>
 #include "button.hpp"
 
 void Button::iniciar(){
-    pinMode(pin, PULLUP);
-    estado = digitalRead(pin);
+    pinMode(pin, INPUT_PULLUP);
+    estado = HIGH;
 }
 
 bool Button::liberado(){
-    if (digitalRead(pin) == LOW)
+    return debouce(LOW);
+    // int read = digitalRead(pin);
+    // if(read == LOW){
+    //     return true;
+    // }
+    // return false;
+}
+
+bool Button::pressionado(){
+    int read = digitalRead(pin);
+    if (read == HIGH)
     {
-        estado = true;
+        return true;
     }
-    if (digitalRead(pin) == HIGH && estado)
+    return false;
+}
+
+boolean Button::debouce(int state)
+{
+    boolean gotEvent = false;
+
+    int reading = digitalRead(pin);
+
+    if (reading != lastState)
     {
-        estado = false;
+        lastDebounceTime = millis();
     }
-    return !estado;
+
+    if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY)
+    {
+        if (reading != estado)
+        {
+            estado = reading;
+
+            if (estado == state)
+            {
+                gotEvent = true;
+            }
+        }
+    }
+
+    lastState = reading;
+
+    return gotEvent;
 }
