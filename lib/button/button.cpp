@@ -8,11 +8,6 @@ void Button::iniciar(){
 
 bool Button::liberado(){
     return debouce(LOW);
-    // int read = digitalRead(pin);
-    // if(read == LOW){
-    //     return true;
-    // }
-    // return false;
 }
 
 bool Button::pressionado(){
